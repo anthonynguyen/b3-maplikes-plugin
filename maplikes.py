@@ -5,6 +5,7 @@
 import b3
 import b3.events
 import b3.plugin
+import re
 
 __version__ = "1"
 __author__ = "clearskies (Anthony Nguyen)"
@@ -25,11 +26,9 @@ class MaplikesPlugin(b3.plugin.Plugin):
 	def onEvent(self, event):
 		if event.type == b3.events.EVT_GAME_MAP_CHANGE:
 			self.mapname = event.data["new"]
-			self.verbose(self.mapname)
 
 	def hasVoted(self, client):
 		chq = "SELECT * FROM maplikes WHERE client_id = '{0}' AND map = '{1}'".format(client, self.mapname)
-		self.verbose(chq)
 		c = self.console.storage.query(chq)
 		if c and c.rowcount > 0:
 			return c.getRow()
@@ -38,10 +37,8 @@ class MaplikesPlugin(b3.plugin.Plugin):
 
 	def doVote(self, client, action, confirm = False):
 		vs = self.hasVoted(client.id)
-		self.verbose(type(vs["changes_left"]))
 		if not vs:
 			dbq = "INSERT INTO maplikes (id, client_id, map, likes, changes_left, last_voted) VALUES (DEFAULT, '{0}', '{1}', '{2}', DEFAULT, DEFAULT)".format(client.id, self.mapname, action)
-			self.verbose(dbq)
 			c = self.console.storage.query(dbq)
 			client.message("Successfully {0}liked^7 {1}!".format("^2" if action == 1 else "^1dis", self.mapname))
 		else:
@@ -58,7 +55,6 @@ class MaplikesPlugin(b3.plugin.Plugin):
 				client.message("Type {0}like confirm ^7to confirm.".format("^2!" if action == 1 else "^1!dis"))
 
 	def cmd_like(self, data, client, cmd = None):
-		self.verbose(data)
 		if "confirm" in data:
 			confirm = True
 		else:
@@ -66,7 +62,6 @@ class MaplikesPlugin(b3.plugin.Plugin):
 		self.doVote(client, 1, confirm)
 
 	def cmd_dislike(self, data, client, cmd = None):
-		self.verbose(data)
 		if "confirm" in data:
 			confirm = True
 		else:
